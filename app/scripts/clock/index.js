@@ -8,6 +8,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three';
+import TweenLite from 'gsap';
 import Dial from './dial';
 import HourMark from './hour-mark';
 
@@ -16,13 +17,13 @@ const RENDERER_PARAMETER = {
 };
 
 const CAMERA_PARAMETER = {
-  fovy: 120,
+  fovy: 60,
   aspect: window.innerWidth / window.innerHeight,
   near: 0.1,
-  far: 10.0,
+  far: 60.0,
   x: 0.0,
   y: 0.0,
-  z: 10.0,
+  z: 2.0,
   lookAt: new Vector3(0.0, 0.0, 0.0)
 };
 
@@ -40,6 +41,7 @@ class Clock{
     });
     this.camera = null;
     this.scene = null;
+    this.container = null;
     this.directional = null;
     this.ambient = null;
     this.dial = null;
@@ -49,6 +51,17 @@ class Clock{
     this.secondHandContainer = null;
     this.minuteHandContainer = null;
     this.shortHandContainer = null;
+
+    this.secondStart = {
+      angle: 0
+    };
+
+    this.secondEnd = {
+      angle: 0
+    };
+
+    this.createGUI = this.createGUI.bind(this);
+    this.rotateSecond = this.rotateSecond.bind(this);
   }
 
   init(){
@@ -59,10 +72,9 @@ class Clock{
         CAMERA_PARAMETER.near,
         CAMERA_PARAMETER.far
     );
-
-    this.camera.position.x = CAMERA_PARAMETER.x;
-    this.camera.position.y = CAMERA_PARAMETER.y;
-    this.camera.position.z = CAMERA_PARAMETER.z;
+    Object.keys(this.camera.position).forEach((key) => {
+      this.camera.position[key] = CAMERA_PARAMETER[key];
+    });
     this.camera.lookAt(CAMERA_PARAMETER.lookAt);
 
     this.renderer.setClearColor(new Color(RENDERER_PARAMETER.color));
@@ -72,52 +84,105 @@ class Clock{
     this.directional = new DirectionalLight(0xffffff);
     this.ambient = new AmbientLight(0xffffff, 0.2);
 
+    this.container = new Object3D();
+
     this.dial = new Dial();
-    this.secondHand = new HourMark(0.5, 14, 1, 0xf44242);
+    this.secondHand = new HourMark(0.01, 0.5, 0.05, 0xf44242);
     this.secondHand.position.x = 0;
     this.secondHand.position.y = 0;
     this.secondHand.position.z = 0;
     this.secondHandContainer = new Object3D();
+    this.secondHandContainer.position.x = 0;
+    this.secondHandContainer.position.y = 0;
+    this.secondHandContainer.position.z = 1;
 
-    this.minuteHand = new HourMark(0.5, 13, 1, 0x000000);
-    this.minuteHand.position.set(0, 0, 0);
+    this.minuteHand = new HourMark(0.025, 1, 0.05, 0x00ff00);
+    this.minuteHand.position.set(0, 0.5, 0);
     this.minuteHandContainer = new Object3D();
 
-    this.shortHand = new HourMark(0.5, 9, 1, 0x000000);
+    this.shortHand = new HourMark(0.05, 0.5, 0.05, 0x42f4d4);
     this.shortHand.position.set(0, 0, 0);
     this.shortHandContainer = new Object3D();
 
-    this.scene.add(this.dial);
-    // this.scene.add(this.secondHand);
-    this.scene.add(this.shortHandContainer);
-    this.scene.add(this.minuteHandContainer);
-    this.scene.add(this.secondHandContainer);
-    this.scene.add(this.directional);
-    this.scene.add(this.ambient);
+    this.scene.add(this.container);
+    this.container.add(this.dial);
+    this.container.add(this.shortHandContainer);
+    this.container.add(this.minuteHandContainer);
+    this.container.add(this.secondHandContainer);
+    this.container.add(this.directional);
+    this.container.add(this.ambient);
+    this.secondHandContainer.add(this.secondHand);
     this.shortHandContainer.add(this.shortHand);
     this.minuteHandContainer.add(this.minuteHand);
-    this.secondHandContainer.add(this.secondHand);
-    const now = new Date();
-    const y = -((PI * 2) * (now.getSeconds() / 60.0));
-    // minute.rotation.y = -((Math.PI * 2) * (now.getMinutes() / 60.0))
-    // hour.rotation.y   = -((Math.PI * 2) * (now.getHours()   / 12.0))
+
+    this.shortHandContainer.position.set(0, -0.25, 0);
+
+    /* const now = new Date();
+    // hour
     this.shortHandContainer.rotation.y = -((PI * 2) * (now.getHours() / 12.0));
+    // minutes
     this.minuteHandContainer.rotation.y = -((PI * 2) * (now.getMinutes() / 60.0));
-    this.secondHandContainer.rotation.y = y;
-    this.camera.rotation.z = y;
+    // seconds
+    this.secondHandContainer.rotation.y = -((PI * 2) * (now.getSeconds() / 60.0));*/
+    this.camera.rotation.z = this.secondHandContainer.rotation.y;
+    // this.camera.lookAt(this.dial.position);
     this.directional.position.set(1.0, 0, 1.0);
+    this.createGUI();
+    this.rotateSecond();
+  }
 
+  /**
+   * dat.GUIを作成
+   */
+  createGUI(){
+    this.gui = new dat.GUI();
+    const s = this.gui.addFolder('second');
+    Object.keys(this.secondHandContainer.position).forEach((key) => {
+      s.add(this.secondHandContainer.position, key, -100, 100).onChange((a) => {
+        this.secondHandContainer.position[key] = a * 0.1;
+      }).step(0.01);
+    });
+    s.open();
+  }
 
+  rotateSecond(){
+    const date = new Date();
+    this.secondStart = {
+      angle: date.getSeconds()
+    };
+    this.secondEnd = {
+      angle: this.secondStart.angle + 1
+    };
+    // this.startAngle = date.getSeconds();
+    // this.endAngle = this.startAngle + 1;
+    TweenLite.to(this.secondStart, 1, {
+      angle: this.secondEnd.angle,
+      ease: Linear.easeOut,
+      onUpdate: () => {
+        // -((Math.PI * 2) * (this.angle / 60.0));
+        this.secondHandContainer.rotation.z = -((PI * 2) * (this.secondStart.angle / 60.0));
+      },
+      onComplete: () => {
+        // rotation_start.angle = new Date().getSeconds();
+        // rotation_end.angle   = rotation_start.angle + 1;
+        this.secondStart.angle = date.getSeconds();
+        this.secondEnd.angle = this.secondStart.angle + 1;
+        this.rotateSecond();
+      }
+    });
   }
 
   update(){
     this.renderer.clear();
-    const now = new Date();
+
+    /* const now = new Date();
     const sec = now.getSeconds();
-    const y = -((PI * 2) * (sec / 60));
-    this.minuteHandContainer.rotation.y -= 0.0018 / 60;
-    this.shortHandContainer.rotation.y -= 0.0018 / 60 / 12;
-    this.secondHandContainer.rotation.z = y;
+    const y = -((PI * 2) * (sec / 60));*/
+    // this.minuteHandContainer.rotation.y -= 0.0018 / 60;
+    // this.shortHandContainer.rotation.y -= 0.0018 / 60 / 12;
+    // this.secondHandContainer.rotation.y -= 0.0018;
+    // this.camera.rotation.z -= 0.0018;
+    // this.secondHandContainer.rotation.z = y;
     this.renderer.render(this.scene, this.camera);
   }
 

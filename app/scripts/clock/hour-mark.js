@@ -21,10 +21,17 @@ class HourMark extends Object3D{
    */
   constructor(width = 1, height = 1, depth = 1, color = 0x00ff00){
     super();
-    const geometory = new BoxGeometry(width, height, depth);
+    this.geometory = new BoxGeometry(width, height, depth);
     const material = new MeshLambertMaterial({ color });
-    this.cube = new Mesh(geometory, material);
+    this.cube = new Mesh(this.geometory, material);
     this.add(this.cube);
+    this.position.x = 0;
+    this.position.y = 0;
+    this.position.z = 0;
+  }
+
+  get _geometory(){
+    return this.geometory;
   }
 }
 export default HourMark;

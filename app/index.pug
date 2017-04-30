@@ -7,6 +7,9 @@ html(lang='en')
         // endbuild
     body
         canvas#canvas
+        // build:js script/vendor.js
+        script(type='text/javascript', src= '/node_modules/dat.gui/build/dat.gui.js')
+        // endbuild
         // build:js scripts/main.bundle.js
         script(type='text/javascript', src= '../scripts/index.bundle.js')
         // endbuild
