@@ -2,6 +2,7 @@ import {
   AmbientLight,
   Color,
   DirectionalLight,
+  Group,
   Object3D,
   PerspectiveCamera,
   Scene,
@@ -33,6 +34,8 @@ const PI = Math.PI;
  * @classdesc
  * 時計の親クラス。
  * ここのクラスでは純粋にcamera scene, rendererの更新系しかしない。
+ *
+ * // todo: Container系のObject3D周りをリファクタリングすること
  */
 class Clock{
   constructor(){
@@ -42,6 +45,7 @@ class Clock{
     this.camera = null;
     this.scene = null;
     this.container = null;
+    this.pivot = null;
     this.directional = null;
     this.ambient = null;
     this.dial = null;
@@ -85,7 +89,7 @@ class Clock{
     this.ambient = new AmbientLight(0xffffff, 0.2);
 
     this.container = new Object3D();
-
+    this.pivot = new Group();
     this.dial = new Dial();
     this.secondHand = new HourMark(0.01, 0.5, 0.05, 0xf44242);
     this.secondHand.position.x = 0;
@@ -97,35 +101,31 @@ class Clock{
     this.secondHandContainer.position.z = 1;
 
     this.minuteHand = new HourMark(0.025, 1, 0.05, 0x00ff00);
-    this.minuteHand.position.set(0, 0.5, 0);
+    // this.minuteHand.position.set(0, 0.5, 0);
     this.minuteHandContainer = new Object3D();
 
     this.shortHand = new HourMark(0.05, 0.5, 0.05, 0x42f4d4);
-    this.shortHand.position.set(0, 0, 0);
+    // this.shortHand.position.set(0, 0, 0);
     this.shortHandContainer = new Object3D();
 
     this.scene.add(this.container);
     this.container.add(this.dial);
-    this.container.add(this.shortHandContainer);
-    this.container.add(this.minuteHandContainer);
-    this.container.add(this.secondHandContainer);
+    this.container.add(this.pivot);
+    this.pivot.add(this.shortHandContainer);
+    this.pivot.add(this.minuteHandContainer);
+    this.pivot.add(this.secondHandContainer);
     this.container.add(this.directional);
     this.container.add(this.ambient);
     this.secondHandContainer.add(this.secondHand);
     this.shortHandContainer.add(this.shortHand);
     this.minuteHandContainer.add(this.minuteHand);
+    this.secondHand.position.set(0, 0.5 * 0.5, 0);
+    this.shortHandContainer.position.set(0, 0, 0);
+    this.minuteHand.position.set(0, 0.5, 0);
+    this.shortHand.position.set(0, 0.5 * 0.5, 0);
 
-    this.shortHandContainer.position.set(0, -0.25, 0);
 
-    /* const now = new Date();
-    // hour
-    this.shortHandContainer.rotation.y = -((PI * 2) * (now.getHours() / 12.0));
-    // minutes
-    this.minuteHandContainer.rotation.y = -((PI * 2) * (now.getMinutes() / 60.0));
-    // seconds
-    this.secondHandContainer.rotation.y = -((PI * 2) * (now.getSeconds() / 60.0));*/
     this.camera.rotation.z = this.secondHandContainer.rotation.y;
-    // this.camera.lookAt(this.dial.position);
     this.directional.position.set(1.0, 0, 1.0);
     this.createGUI();
     this.rotateSecond();
@@ -137,14 +137,19 @@ class Clock{
   createGUI(){
     this.gui = new dat.GUI();
     const s = this.gui.addFolder('second');
-    Object.keys(this.secondHandContainer.position).forEach((key) => {
-      s.add(this.secondHandContainer.position, key, -100, 100).onChange((a) => {
-        this.secondHandContainer.position[key] = a * 0.1;
+    Object.keys(this.shortHandContainer.position).forEach((key) => {
+      s.add(this.shortHandContainer.position, key, -100, 100).onChange((a) => {
+        this.shortHandContainer.position[key] = a * 0.1;
       }).step(0.01);
     });
     s.open();
   }
 
+  /**
+   * 秒針をいい感じのイージングで移動。
+   * アナログ時計は音なる奴いやｗ
+   * @private
+   */
   rotateSecond(){
     const date = new Date();
     this.secondStart = {
@@ -153,18 +158,13 @@ class Clock{
     this.secondEnd = {
       angle: this.secondStart.angle + 1
     };
-    // this.startAngle = date.getSeconds();
-    // this.endAngle = this.startAngle + 1;
     TweenLite.to(this.secondStart, 1, {
       angle: this.secondEnd.angle,
       ease: Linear.easeOut,
       onUpdate: () => {
-        // -((Math.PI * 2) * (this.angle / 60.0));
         this.secondHandContainer.rotation.z = -((PI * 2) * (this.secondStart.angle / 60.0));
       },
       onComplete: () => {
-        // rotation_start.angle = new Date().getSeconds();
-        // rotation_end.angle   = rotation_start.angle + 1;
         this.secondStart.angle = date.getSeconds();
         this.secondEnd.angle = this.secondStart.angle + 1;
         this.rotateSecond();
@@ -172,17 +172,19 @@ class Clock{
     });
   }
 
+  /**
+   * 時間を元に各Objectのrotationを計算して描画
+   * @public
+   */
   update(){
     this.renderer.clear();
+    const now = new Date();
+    const hour = (now.getHours() >= 12) ? now.getHours() - 12 : now.getHours();
+    const minutes = now.getMinutes();
 
-    /* const now = new Date();
-    const sec = now.getSeconds();
-    const y = -((PI * 2) * (sec / 60));*/
-    // this.minuteHandContainer.rotation.y -= 0.0018 / 60;
-    // this.shortHandContainer.rotation.y -= 0.0018 / 60 / 12;
-    // this.secondHandContainer.rotation.y -= 0.0018;
-    // this.camera.rotation.z -= 0.0018;
-    // this.secondHandContainer.rotation.z = y;
+    this.shortHandContainer.rotation.z = -30 * (PI / 180) * (hour + minutes / 60);
+    this.minuteHandContainer.rotation.z = -((PI * 2) * minutes / 60);
+
     this.renderer.render(this.scene, this.camera);
   }
 
