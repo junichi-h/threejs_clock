@@ -7,10 +7,13 @@ class Main{
     this.clock = new Clock();
     this.timer = -1;
     this.isPlaying = true;
+    this.mouseX = 0;
+    this.mouseY = 0;
     this.setStats = this.setStats.bind(this);
     this.update = this.update.bind(this);
     this.onResize = this.onResize.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
   }
 
   /**
@@ -23,6 +26,7 @@ class Main{
     this.onResize();
     window.addEventListener('resize', this.onResize);
     window.addEventListener('keydown', this.onKeyDown);
+    document.addEventListener('mousemove', this.onMouseMove);
   }
 
   /**
@@ -43,12 +47,18 @@ class Main{
     this.timer = window.requestAnimationFrame(this.update);
   }
 
+  onMouseMove(event){
+    this.mouseX = event.clientX;
+    this.mouseY = event.clientY;
+  }
+
   /**
    * rendererの更新
    * @private
    */
   update(){
     window.cancelAnimationFrame(this.timer);
+    this.clock.rotate(this.mouseX, this.mouseY);
     this.clock.update();
     if(this.isPlaying){
       this.timer = window.requestAnimationFrame(this.update);

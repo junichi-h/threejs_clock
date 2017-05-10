@@ -15,13 +15,14 @@ class Dial extends Object3D{
     const rf = PI / 180;
     const size = 0.01;
     for(let i = 0; i < NUM; i++){
-      let color = 0;
+      const color = 0x191919;
       const _y = (i % 5) === 0 ? 0.01 : 0.05;
-      if(i <= 0){
-        color = 0xffe500;
+
+      /* if(i <= 0){
+        color = 0x191919;
       } else {
-        color = (i % 5) === 0 ? 0xff00ff : 0x156289;
-      }
+        color = (i % 5) === 0 ? 0x191919 : 0x191919;
+      }*/
       const hourMark = new HourMark(size, _y, 0.01, color);
       this.add(hourMark);
 
