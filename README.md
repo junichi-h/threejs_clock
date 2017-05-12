@@ -1,4 +1,4 @@
-# threejs_clock
+# threejs_clock :watch:
 
 [Three.js](https://threejs.org/)を使って時計を作ってみる。
 
