@@ -12,12 +12,12 @@
 
 ## 実際にやってみて難しかった事（できなかったこと）
  * 各時計の針を自分が意図した場所に配置できなかったこと。  
-  （[dat.gui](https://workshop.chromeexperiments.com/examples/gui)を使い一つ一つ解決
+  （[dat.gui](https://workshop.chromeexperiments.com/examples/gui)を使い一つ一つ解決）  
  * 時計の回転時に各Objectの回転軸の中心がObjectの中心になっていたので苦労した。
-   ・自分としてはContaienr的なのをひいてあげて Objectの `height / 2` ずらせば行けると思った。  
-   ・もしくは、 `matrix` 的なので `height / 2` みたいなことをするのか？と思った。  
-   ・結果的に[Group](https://threejs.org/docs/#api/objects/Group)を使って解決した。  
- * 自分のコードを書くことを心がけたので演出ができなかった。。  :tired_face:
+    * 自分としてはContaienr的なのをひいてあげて Objectの `height / 2` ずらせば行けると思った。  
+    * もしくは、 `matrix` 的なので `height / 2` みたいなことをするのか？と思った。  
+    * 結果的に[Group](https://threejs.org/docs/#api/objects/Group)を使って解決した。  
+ * 自分のコードを書くことを心がけたので演出ができなかった。。  :tired_face:  
  （↑はどうしたらいいかがわからず... DOMとは違う...）
 
 ## requirement
