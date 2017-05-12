@@ -15,7 +15,7 @@
     "start": "concurrently --kill-others --raw \"yarn run dev\"",
     "dev": "cross-env NODE_ENV=development nodemon --require babel-register server.js --watch server.js --port 9000",
     "preprod": "rimraf ./.tmp ./dist",
-    "prod": "NODE_ENV=prod gulp pug && gulp styles:prod && gulp js:prod && gulp lib:prod && gulp build && gulp crlf",
+    "prod": "NODE_ENV=prod gulp pug && gulp styles:prod && gulp js:prod && gulp build",
     "postprod": "sh postbuild.sh"
   },
   "dependencies": {
@@ -53,6 +53,7 @@
     "gulp-debug": "^3.1.0",
     "gulp-if": "^2.0.2",
     "gulp-load-plugins": "^1.5.0",
+    "gulp-minify-css": "^1.2.4",
     "gulp-minify-html": "^1.0.6",
     "gulp-multidest": "^1.0.2",
     "gulp-newer": "^1.3.0",

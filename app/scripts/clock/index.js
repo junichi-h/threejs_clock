@@ -2,7 +2,6 @@ import {
   AmbientLight,
   Color,
   DirectionalLight,
-  DirectionalLightHelper,
   Group,
   Object3D,
   PerspectiveCamera,
@@ -57,7 +56,6 @@ class Clock{
     this.secondHandContainer = null;
     this.minuteHandContainer = null;
     this.shortHandContainer = null;
-    this.helper = null;
 
     this.secondStart = {
       angle: 0
@@ -91,8 +89,6 @@ class Clock{
 
     this.directional = new DirectionalLight(0x333333, 0.5);
     this.ambient = new AmbientLight(0xffffff, 0.2);
-    this.helper = new DirectionalLightHelper(this.directional, 10);
-
     this.container = new Object3D();
     this.pivot = new Group();
     this.dial = new Dial();
@@ -130,8 +126,7 @@ class Clock{
 
     this.camera.rotation.z = this.secondHandContainer.rotation.y;
     this.directional.position.set(-1.0, 2.0, 1.0);
-    this.scene.add(this.helper);
-    this.createGUI();
+    // this.createGUI();
     this.rotateSecond();
   }
 
@@ -140,13 +135,14 @@ class Clock{
    */
   createGUI(){
     this.gui = new dat.GUI();
-    const l = this.gui.addFolder('light');
+
+    /* const l = this.gui.addFolder('light');
     Object.keys(this.directional.position).forEach((key) => {
       l.add(this.directional.position, key, -100, 100).onChange((a) => {
         this.directional.position[key] = a;
         console.log(this.directional.position);
       });
-    });
+    });*/
 
     /* const s = this.gui.addFolder('second');
     Object.keys(this.shortHandContainer.position).forEach((key) => {
@@ -218,6 +214,7 @@ class Clock{
    * マウス座標で回転させる
    * @param x   { number }
    * @param y   { number }
+   * @public
    */
   rotate(x, y){
     const vx = window.innerWidth * MOUSE_ROTATE_RATIO * 0.5;
@@ -234,6 +231,12 @@ class Clock{
     this.container.rotation.y = rotateY;
   }
 
+  /**
+   * 3D空間のresize
+   * @param width   { number }
+   * @param height  { number }
+   * @public
+   */
   resize(width, height){
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();

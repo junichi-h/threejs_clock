@@ -1,6 +1,10 @@
 import Stats from 'stats-js';
 import Clock from './clock';
 
+/**
+ * @classdesc
+ * このプロジェクトのエントリーポイント
+ */
 class Main{
   constructor(){
     this.stats = new Stats();
@@ -31,6 +35,7 @@ class Main{
 
   /**
    * statsの作成
+   * @private
    */
   setStats(){
     const dom = this.stats.domElement;
@@ -47,6 +52,11 @@ class Main{
     this.timer = window.requestAnimationFrame(this.update);
   }
 
+  /**
+   * マウスが移動された
+   * @param event
+   * @private
+   */
   onMouseMove(event){
     this.mouseX = event.clientX;
     this.mouseY = event.clientY;
@@ -77,6 +87,7 @@ class Main{
   /**
    * escキーでanimationの再生・停止を制御
    * @param event
+   * @private
    */
   onKeyDown(event){
     if(event.keyCode === 27){

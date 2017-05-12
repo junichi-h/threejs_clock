@@ -1,15 +1,22 @@
+//- isProdでパスを切り替える
+- var isProd = process.env.NODE_ENV === 'prod';
+- var styleRoot = isProd ? 'styles/' : '../styles/';
+- var nodeModules = isProd ? '../node_modules/' : '/node_modules/';
+- var jsRoot = isProd ? 'scripts/' : '../scripts/';
 doctype html
-html(lang='en')
+html(lang='ja')
     head
         title Three.js :: Clock
         // build:css styles/main.css
-        link(rel='stylesheet', type='text/css', href='../styles/main.css', media='all')
+        link(rel='stylesheet', type='text/css', href=styleRoot + 'main.css', media='all')
         // endbuild
     body
         canvas#canvas
-        // build:js script/vendor.js
-        script(type='text/javascript', src= '/node_modules/dat.gui/build/dat.gui.js')
+        if isProd
+            include ./_base/_analytics
+        // build:js scripts/vendor.js
+        script(type='text/javascript', src= nodeModules + 'dat.gui/build/dat.gui.js')
         // endbuild
         // build:js scripts/main.bundle.js
-        script(type='text/javascript', src= '../scripts/index.bundle.js')
+        script(type='text/javascript', src= jsRoot + 'index.bundle.js')
         // endbuild
