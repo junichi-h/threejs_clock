@@ -37,6 +37,9 @@ yarn install
 yarn start
 ```
 
+[http://localhost:9000](http://localhost:9000)で起動されます。
+
+
 ## ビルド
 
 ```
